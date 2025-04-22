@@ -24,14 +24,23 @@ export default function Home() {
   const handleSendMessage = async (content: string, responseType: 'text' | 'image' = 'text') => {
     await sendMessage(content, responseType);
   };
+  
+  // Wrapper functions that return void to match the component prop types
+  const handleCreateNewChat = async () => {
+    await createNewChat();
+  };
+  
+  const handleLoadChat = async (chatId: number) => {
+    await loadChat(chatId);
+  };
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-background text-foreground">
       {/* Sidebar - Hidden on mobile */}
       <Sidebar 
         chats={chats} 
-        onNewChat={createNewChat} 
-        onSelectChat={loadChat}
+        onNewChat={handleCreateNewChat} 
+        onSelectChat={handleLoadChat}
         currentChatId={currentChat?.chat.id}
       />
 
@@ -40,8 +49,8 @@ export default function Home() {
         {/* Mobile Navigation */}
         <MobileNav 
           chats={chats} 
-          onNewChat={createNewChat} 
-          onSelectChat={loadChat}
+          onNewChat={handleCreateNewChat} 
+          onSelectChat={handleLoadChat}
           currentChatId={currentChat?.chat.id}
         />
         

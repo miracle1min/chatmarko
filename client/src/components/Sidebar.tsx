@@ -6,8 +6,8 @@ import { format } from 'date-fns';
 
 interface SidebarProps {
   chats: Chat[];
-  onNewChat: () => Promise<void>;
-  onSelectChat: (chatId: number) => Promise<void>;
+  onNewChat: () => Promise<any>;
+  onSelectChat: (chatId: number) => Promise<any>;
   currentChatId?: number;
 }
 

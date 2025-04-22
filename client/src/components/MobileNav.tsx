@@ -7,8 +7,8 @@ import { Chat } from '@/types';
 
 interface MobileNavProps {
   chats: Chat[];
-  onNewChat: () => Promise<void>;
-  onSelectChat: (chatId: number) => Promise<void>;
+  onNewChat: () => Promise<any>;
+  onSelectChat: (chatId: number) => Promise<any>;
   currentChatId?: number;
 }
 
