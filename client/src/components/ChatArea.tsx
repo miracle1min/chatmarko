@@ -23,12 +23,12 @@ export default function ChatArea({ messages, isLoading, onSendMessage }: ChatAre
   return (
     <div 
       ref={chatContainerRef}
-      className="flex-1 overflow-auto px-4 py-2"
+      className="flex-1 overflow-auto px-3 md:px-4 py-2 md:py-4 bg-dark-900"
     >
       {messages.length === 0 ? (
         <WelcomeScreen onSendMessage={onSendMessage} />
       ) : (
-        <div className="max-w-3xl mx-auto">
+        <div className="max-w-3xl mx-auto pt-2 pb-4">
           {messages.map((message) => (
             <MessageItem key={message.id} message={message} />
           ))}

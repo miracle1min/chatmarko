@@ -52,7 +52,7 @@ export default function InputArea({ onSendMessage, isLoading }: InputAreaProps) 
   };
 
   return (
-    <div className="p-4 border-t border-gray-700">
+    <div className="sticky bottom-0 z-10 p-3 md:p-4 border-t border-gray-700 bg-dark-800 backdrop-blur-md">
       <div className="max-w-3xl mx-auto">
         <div className="flex justify-center mb-2">
           <ToggleGroup 
@@ -61,12 +61,16 @@ export default function InputArea({ onSendMessage, isLoading }: InputAreaProps) 
             onValueChange={(value) => {
               if (value) setResponseType(value as 'text' | 'image');
             }}
-            className="bg-dark-800 border border-gray-700 rounded-full p-1"
+            className="bg-dark-900 border border-gray-700 rounded-full p-1"
           >
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <ToggleGroupItem value="text" aria-label="Text mode" className="rounded-full data-[state=on]:bg-gray-700">
+                  <ToggleGroupItem 
+                    value="text" 
+                    aria-label="Text mode" 
+                    className="rounded-full data-[state=on]:bg-dark-700 data-[state=on]:text-primary"
+                  >
                     <MessageSquare className="h-4 w-4 mr-1" />
                     <span className="text-xs">Teks</span>
                   </ToggleGroupItem>
@@ -80,7 +84,11 @@ export default function InputArea({ onSendMessage, isLoading }: InputAreaProps) 
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <ToggleGroupItem value="image" aria-label="Image generation mode" className="rounded-full data-[state=on]:bg-gray-700">
+                  <ToggleGroupItem 
+                    value="image" 
+                    aria-label="Image generation mode" 
+                    className="rounded-full data-[state=on]:bg-dark-700 data-[state=on]:text-primary"
+                  >
                     <ImageIcon className="h-4 w-4 mr-1" />
                     <span className="text-xs">Gambar</span>
                   </ToggleGroupItem>
@@ -99,8 +107,8 @@ export default function InputArea({ onSendMessage, isLoading }: InputAreaProps) 
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={handleKeyDown}
-            className={`w-full bg-dark-800 border border-gray-700 rounded-lg px-4 py-3 pr-16 text-white resize-none focus:outline-none focus:ring-1 focus:ring-primary placeholder-gray-500 ${
-              responseType === 'image' ? 'border-green-600/50' : ''
+            className={`w-full bg-dark-900 border border-gray-700 rounded-lg px-4 py-3 pr-14 text-white resize-none focus:outline-none focus:ring-1 focus:ring-primary placeholder-gray-500 ${
+              responseType === 'image' ? 'border-primary/30' : ''
             }`}
             placeholder={getPlaceholder()}
             style={{ minHeight: '52px', maxHeight: '200px' }}
@@ -120,7 +128,7 @@ export default function InputArea({ onSendMessage, isLoading }: InputAreaProps) 
 
         <div className="flex items-center justify-center space-x-2 mt-2">
           {responseType === 'image' && (
-            <div className="flex items-center text-xs text-green-500">
+            <div className="flex items-center text-xs text-primary animate-pulse">
               <ImageIcon className="h-3 w-3 mr-1" />
               <span>Mode gambar aktif</span>
             </div>
