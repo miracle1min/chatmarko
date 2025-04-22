@@ -107,17 +107,18 @@ export function useChat() {
     try {
       setIsLoading(true);
       
-      if (!currentChat) {
+      // Jika tidak ada chat aktif, buat chat baru terlebih dahulu
+      let chatToUse = currentChat;
+      let chatId: number;
+      
+      if (!chatToUse) {
         const newChat = await createNewChat();
         if (!newChat) {
           throw new Error('Failed to create a new chat for your message');
         }
-      }
-      
-      const chatId = currentChat?.chat.id;
-      
-      if (!chatId) {
-        throw new Error('No active chat found');
+        chatId = newChat.id;
+      } else {
+        chatId = chatToUse.chat.id;
       }
       
       const messageData: NewMessageRequest = {
