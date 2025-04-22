@@ -1,15 +1,13 @@
-import axios from 'axios';
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
-interface GeminiResponse {
-  candidates: {
-    content: {
-      parts: {
-        text: string;
-      }[];
-    };
-  }[];
-}
-
+/**
+ * Generates a description of an image based on prompt
+ * Note: Gemini doesn't actually generate images directly, but can describe them in detail
+ * In a production environment, you might want to use a different service for actual image generation
+ * 
+ * @param prompt The user's image generation prompt
+ * @returns A detailed description of the image that can be used to visualize it
+ */
 export async function generateImage(prompt: string): Promise<string> {
   try {
     const apiKey = process.env.GEMINI_API_KEY;
@@ -18,51 +16,34 @@ export async function generateImage(prompt: string): Promise<string> {
       throw new Error('GEMINI_API_KEY is not defined in environment variables');
     }
 
-    // Using Gemini Pro Vision model for image generation
-    const response = await axios.post<GeminiResponse>(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent?key=${apiKey}`,
-      {
-        contents: [
-          {
-            parts: [
-              {
-                text: `Generate an image based on this description: ${prompt}`
-              }
-            ]
-          }
-        ],
-        generationConfig: {
-          temperature: 0.8,
-          maxOutputTokens: 2048
-        }
-      },
-      {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      }
-    );
+    // Initialize the Gemini API client
+    const genAI = new GoogleGenerativeAI(apiKey);
+    
+    // Use Gemini Pro model for text generation
+    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
-    // In a real implementation, Gemini might return an actual image URL
-    // For now, we'll use a placeholder assuming the response contains image data
-    // In production, you would handle the actual image data properly
-    if (response.data.candidates && response.data.candidates.length > 0) {
-      // In a real implementation, extract the actual image URL from the response
-      // This is a simplified version that assumes the text response contains image URL info
-      const responseText = response.data.candidates[0].content.parts[0].text;
-      
-      // For now, return the text response which would ideally contain image URL info
-      return responseText;
+    // Create a prompt that instructs Gemini to describe an image in detail
+    const enhancedPrompt = `Generate a detailed description of an image based on this prompt: "${prompt}". 
+      Focus on visual details like colors, composition, lighting, and subject matter. 
+      Start with "Here's an image of" or similar phrasing.`;
+
+    // Generate content
+    const result = await model.generateContent(enhancedPrompt);
+    const response = await result.response;
+    const text = response.text();
+    
+    if (!text) {
+      throw new Error('Empty response from Gemini API');
     }
     
-    throw new Error('No image generated');
+    return text;
   } catch (error) {
-    console.error('Error generating image:', error);
+    console.error('Error generating image description:', error);
     
-    if (axios.isAxiosError(error) && error.response) {
-      throw new Error(`Gemini API error: ${error.response.status} - ${error.response.data?.error?.message || JSON.stringify(error.response.data)}`);
+    if (error instanceof Error) {
+      throw new Error(`Gemini API error: ${error.message}`);
     }
     
-    throw new Error('Failed to generate image');
+    throw new Error('Failed to generate image description');
   }
 }
