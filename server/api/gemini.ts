@@ -3,7 +3,7 @@ import * as path from 'path';
 import * as crypto from 'crypto';
 
 /**
- * Generates an image using Google Gemini AI through REST API
+ * Generates an image using Google Gemini AI through direct REST API
  * 
  * @param prompt The user's image generation prompt
  * @returns A URL to the generated image that can be displayed in the UI
@@ -27,7 +27,9 @@ export async function generateImage(prompt: string): Promise<string> {
     const fileName = `gemini_${randomId}`;
     const filePath = path.join(uploadsDir, `${fileName}.png`);
     
-    // Prepare the API request payload
+    console.log('Attempting to generate image with prompt:', prompt);
+    
+    // Prepare the API request payload exactly as shown in the example
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key=${apiKey}`;
     const payload = {
       contents: [{
@@ -40,6 +42,8 @@ export async function generateImage(prompt: string): Promise<string> {
       }
     };
     
+    console.log('Sending request to API URL:', apiUrl);
+    
     // Send the API request
     const response = await fetch(apiUrl, {
       method: 'POST',
@@ -49,13 +53,21 @@ export async function generateImage(prompt: string): Promise<string> {
       body: JSON.stringify(payload)
     });
     
+    // Handle non-200 responses
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(`API request failed: ${response.status} ${response.statusText} - ${JSON.stringify(errorData)}`);
+      let errorMsg = `API request failed with status: ${response.status} ${response.statusText}`;
+      try {
+        const errorData = await response.json();
+        errorMsg += ` - ${JSON.stringify(errorData)}`;
+      } catch (e) {
+        errorMsg += ` - Could not parse error response`;
+      }
+      throw new Error(errorMsg);
     }
     
     // Process the response to extract the image data
     const data = await response.json();
+    console.log('Received response with status:', response.status);
     
     // Extract image data from the response
     if (data.candidates && 
@@ -63,11 +75,17 @@ export async function generateImage(prompt: string): Promise<string> {
         data.candidates[0].content && 
         data.candidates[0].content.parts) {
       
+      console.log('Found candidates in response');
+      
       for (const part of data.candidates[0].content.parts) {
         if (part.inlineData && part.inlineData.data) {
+          console.log('Found inline data for image');
+          
           // Base64 decode and save the image
           const imageBuffer = Buffer.from(part.inlineData.data, 'base64');
           fs.writeFileSync(filePath, imageBuffer);
+          
+          console.log('Image saved to', filePath);
           
           // Return the URL path
           return `/uploads/${fileName}.png`;
@@ -76,6 +94,8 @@ export async function generateImage(prompt: string): Promise<string> {
     }
     
     // If we reach here, there was a response but no image data
+    console.log('No image data found in response, checking for text');
+    
     if (data.candidates && 
         data.candidates[0] && 
         data.candidates[0].content && 
@@ -84,10 +104,14 @@ export async function generateImage(prompt: string): Promise<string> {
       // Check if there's a text response
       for (const part of data.candidates[0].content.parts) {
         if (part.text) {
+          console.log('Found text response instead of image');
           return `Gemini tidak dapat menghasilkan gambar tetapi memberikan jawaban: ${part.text}`;
         }
       }
     }
+    
+    // Debug response structure
+    console.log('Response structure:', JSON.stringify(data, null, 2));
     
     throw new Error('No image or text data found in the API response');
   } catch (error) {
