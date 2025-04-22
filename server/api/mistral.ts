@@ -1,24 +1,4 @@
-import axios from 'axios';
-
-interface MistralResponse {
-  id: string;
-  object: string;
-  created: number;
-  model: string;
-  choices: {
-    index: number;
-    message: {
-      role: string;
-      content: string;
-    };
-    finish_reason: string;
-  }[];
-  usage: {
-    prompt_tokens: number;
-    completion_tokens: number;
-    total_tokens: number;
-  };
-}
+import { Mistral } from "@mistralai/mistralai";
 
 export async function generateChatCompletion(prompt: string): Promise<string> {
   try {
@@ -28,35 +8,64 @@ export async function generateChatCompletion(prompt: string): Promise<string> {
       throw new Error('MISTRAL_API_KEY is not defined in environment variables');
     }
 
-    const response = await axios.post<MistralResponse>(
-      'https://api.mistral.ai/v1/chat/completions',
-      {
-        model: 'mistral-medium-latest',
-        messages: [
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        temperature: 0.7,
-        max_tokens: 1024
-      },
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
-        }
-      }
-    );
+    const client = new Mistral({
+      apiKey: apiKey
+    });
 
-    return response.data.choices[0].message.content;
+    // For non-streaming response
+    const chatResponse = await client.chat({
+      model: "mistral-small-latest",
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.7,
+      maxTokens: 1024
+    });
+
+    return response.choices[0].message.content;
   } catch (error) {
     console.error('Error generating chat completion:', error);
     
-    if (axios.isAxiosError(error) && error.response) {
-      throw new Error(`Mistral API error: ${error.response.status} - ${error.response.data?.error?.message || JSON.stringify(error.response.data)}`);
+    if (error instanceof Error) {
+      throw new Error(`Mistral API error: ${error.message}`);
     }
     
     throw new Error('Failed to generate chat completion');
+  }
+}
+
+// Fungsi streaming opsional yang dapat diimplementasikan di masa depan
+export async function streamChatCompletion(prompt: string, onChunk: (chunk: string) => void): Promise<void> {
+  try {
+    const apiKey = process.env.MISTRAL_API_KEY;
+    
+    if (!apiKey) {
+      throw new Error('MISTRAL_API_KEY is not defined in environment variables');
+    }
+
+    const client = new Mistral({
+      apiKey: apiKey
+    });
+
+    // For streaming response
+    const stream = await client.chat.stream({
+      model: "mistral-small-latest",
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.7,
+      maxTokens: 1024
+    });
+
+    for await (const chunk of stream) {
+      const streamText = chunk.data.choices[0].delta.content;
+      if (streamText) {
+        onChunk(streamText);
+      }
+    }
+  } catch (error) {
+    console.error('Error streaming chat completion:', error);
+    
+    if (error instanceof Error) {
+      throw new Error(`Mistral API streaming error: ${error.message}`);
+    }
+    
+    throw new Error('Failed to stream chat completion');
   }
 }
