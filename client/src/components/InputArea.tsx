@@ -107,16 +107,15 @@ export default function InputArea({ onSendMessage, isLoading }: InputAreaProps) 
             disabled={isLoading}
           />
           
-          <Button
+          <button
             type="submit"
-            size="icon"
-            className={`absolute right-3 bottom-2.5 transition-colors p-1.5 rounded-md ${
-              message.trim() ? 'text-primary' : 'text-gray-400'
-            } hover:text-primary-600`}
+            className={`absolute right-3 bottom-2.5 transition-all p-1.5 rounded-full border-none outline-none bg-transparent ${
+              message.trim() ? 'text-primary opacity-100 scale-100' : 'text-gray-400 opacity-70 scale-95'
+            } hover:text-primary-600 hover:scale-110 disabled:cursor-not-allowed disabled:opacity-50`}
             disabled={!message.trim() || isLoading}
           >
-            <SendIcon className="h-5 w-5" />
-          </Button>
+            <SendIcon className="h-5 w-5" strokeWidth={2.5} />
+          </button>
         </form>
 
         <div className="flex items-center justify-center space-x-2 mt-2">
