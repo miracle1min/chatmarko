@@ -54,7 +54,7 @@ export default function Home() {
         
         {/* Input Area */}
         <InputArea 
-          onSendMessage={content => handleSendMessage(content, 'text')} 
+          onSendMessage={handleSendMessage} 
           isLoading={isLoading}
         />
       </div>

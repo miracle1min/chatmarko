@@ -1,15 +1,18 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { SendIcon } from 'lucide-react';
+import { SendIcon, ImageIcon, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
 interface InputAreaProps {
-  onSendMessage: (content: string) => Promise<void>;
+  onSendMessage: (content: string, responseType: 'text' | 'image') => Promise<void>;
   isLoading: boolean;
 }
 
 export default function InputArea({ onSendMessage, isLoading }: InputAreaProps) {
   const [message, setMessage] = useState('');
+  const [responseType, setResponseType] = useState<'text' | 'image'>('text');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Auto-resize textarea as user types
@@ -25,7 +28,7 @@ export default function InputArea({ onSendMessage, isLoading }: InputAreaProps) 
     
     if (!message.trim() || isLoading) return;
     
-    await onSendMessage(message.trim());
+    await onSendMessage(message.trim(), responseType);
     setMessage('');
     
     // Reset height after clearing
@@ -41,17 +44,65 @@ export default function InputArea({ onSendMessage, isLoading }: InputAreaProps) 
     }
   };
 
+  const getPlaceholder = () => {
+    if (responseType === 'image') {
+      return 'Deskripsikan gambar yang ingin dibuat...';
+    }
+    return 'Tanyakan apa saja';
+  };
+
   return (
     <div className="p-4 border-t border-gray-700">
       <div className="max-w-3xl mx-auto">
+        <div className="flex justify-center mb-2">
+          <ToggleGroup 
+            type="single" 
+            value={responseType}
+            onValueChange={(value) => {
+              if (value) setResponseType(value as 'text' | 'image');
+            }}
+            className="bg-dark-800 border border-gray-700 rounded-full p-1"
+          >
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <ToggleGroupItem value="text" aria-label="Text mode" className="rounded-full data-[state=on]:bg-gray-700">
+                    <MessageSquare className="h-4 w-4 mr-1" />
+                    <span className="text-xs">Teks</span>
+                  </ToggleGroupItem>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  <p>Chat dengan AI (Mistral)</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <ToggleGroupItem value="image" aria-label="Image generation mode" className="rounded-full data-[state=on]:bg-gray-700">
+                    <ImageIcon className="h-4 w-4 mr-1" />
+                    <span className="text-xs">Gambar</span>
+                  </ToggleGroupItem>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  <p>Buat gambar (Gemini)</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </ToggleGroup>
+        </div>
+
         <form onSubmit={handleSubmit} className="relative">
           <Textarea
             ref={textareaRef}
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={handleKeyDown}
-            className="w-full bg-dark-800 border border-gray-700 rounded-lg px-4 py-3 pr-16 text-white resize-none focus:outline-none focus:ring-1 focus:ring-primary placeholder-gray-500"
-            placeholder="Tanyakan apa saja"
+            className={`w-full bg-dark-800 border border-gray-700 rounded-lg px-4 py-3 pr-16 text-white resize-none focus:outline-none focus:ring-1 focus:ring-primary placeholder-gray-500 ${
+              responseType === 'image' ? 'border-green-600/50' : ''
+            }`}
+            placeholder={getPlaceholder()}
             style={{ minHeight: '52px', maxHeight: '200px' }}
             disabled={isLoading}
           />
@@ -67,7 +118,17 @@ export default function InputArea({ onSendMessage, isLoading }: InputAreaProps) 
             <SendIcon className="h-5 w-5" />
           </Button>
         </form>
-        <div className="text-xs text-center mt-2 text-gray-500">
+
+        <div className="flex items-center justify-center space-x-2 mt-2">
+          {responseType === 'image' && (
+            <div className="flex items-center text-xs text-green-500">
+              <ImageIcon className="h-3 w-3 mr-1" />
+              <span>Mode gambar aktif</span>
+            </div>
+          )}
+        </div>
+
+        <div className="text-xs text-center mt-1 text-gray-500">
           ChatMarko dapat membuat kesalahan. Verifikasi informasi penting.
         </div>
       </div>
