@@ -19,18 +19,33 @@ export default function MessageItem({ message }: MessageItemProps) {
   
   const renderContent = () => {
     if (message.responseType === 'image') {
-      // Assuming the content is an image URL
+      // Check if content starts with '/'
+      const imgSrc = message.content.startsWith('/') 
+        ? message.content  // It's a path to an image file
+        : null;  // It's a text description
+      
+      // If we have an image path, render it
+      if (imgSrc) {
+        return (
+          <div className="mt-2">
+            <img 
+              src={imgSrc} 
+              alt="Generated image" 
+              className="max-w-full rounded-md"
+              onError={(e) => {
+                // Fallback if image fails to load
+                (e.target as HTMLImageElement).src = "https://placehold.co/600x400?text=Image+Generation+Error";
+              }} 
+            />
+          </div>
+        );
+      }
+      
+      // Otherwise it's a description of an image, format it nicely
       return (
-        <div className="mt-2">
-          <img 
-            src={message.content} 
-            alt="Generated image" 
-            className="max-w-full rounded-md"
-            onError={(e) => {
-              // Fallback if image fails to load
-              (e.target as HTMLImageElement).src = "https://placehold.co/600x400?text=Image+Generation+Error";
-            }} 
-          />
+        <div className="mt-2 p-3 bg-dark-800 rounded-md border border-gray-700">
+          <div className="text-sm text-gray-400 mb-2">Image Description:</div>
+          <div className="text-gray-300">{message.content}</div>
         </div>
       );
     }

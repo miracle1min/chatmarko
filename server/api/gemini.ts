@@ -1,12 +1,14 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from '@google/genai';
+import mime from 'mime';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as crypto from 'crypto';
 
 /**
- * Generates a description of an image based on prompt
- * Note: Gemini doesn't actually generate images directly, but can describe them in detail
- * In a production environment, you might want to use a different service for actual image generation
+ * Generates an actual image using Google Gemini AI based on the provided prompt
  * 
  * @param prompt The user's image generation prompt
- * @returns A detailed description of the image that can be used to visualize it
+ * @returns A URL to the generated image that can be displayed in the UI
  */
 export async function generateImage(prompt: string): Promise<string> {
   try {
@@ -16,34 +18,93 @@ export async function generateImage(prompt: string): Promise<string> {
       throw new Error('GEMINI_API_KEY is not defined in environment variables');
     }
 
-    // Initialize the Gemini API client
-    const genAI = new GoogleGenerativeAI(apiKey);
-    
-    // Use Gemini Pro model for text generation
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    // Initialize the Gemini AI client
+    const ai = new GoogleGenAI({
+      apiKey: apiKey,
+    });
 
-    // Create a prompt that instructs Gemini to describe an image in detail
-    const enhancedPrompt = `Generate a detailed description of an image based on this prompt: "${prompt}". 
-      Focus on visual details like colors, composition, lighting, and subject matter. 
-      Start with "Here's an image of" or similar phrasing.`;
-
-    // Generate content
-    const result = await model.generateContent(enhancedPrompt);
-    const response = await result.response;
-    const text = response.text();
+    // Configuration for image generation
+    const config = {
+      thinkingConfig: {
+        thinkingBudget: 0,
+      },
+      responseModalities: [
+        'image',
+        'text',
+      ],
+      responseMimeType: 'text/plain',
+    };
     
-    if (!text) {
-      throw new Error('Empty response from Gemini API');
+    // Use the image generation model
+    const model = 'gemini-2.0-flash-exp-image-generation';
+    
+    // Prepare the contents with the user's prompt
+    const contents = [
+      {
+        role: 'user',
+        parts: [
+          {
+            text: prompt,
+          },
+        ],
+      },
+    ];
+
+    // Make sure the uploads directory exists
+    const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir, { recursive: true });
+    }
+
+    // Generate a unique filename
+    const randomId = crypto.randomBytes(8).toString('hex');
+    const fileName = `gemini_${randomId}`;
+    let fullFilePath = '';
+
+    // Stream the response to handle image data
+    const response = await ai.models.generateContentStream({
+      model,
+      config,
+      contents,
+    });
+
+    for await (const chunk of response) {
+      if (!chunk.candidates || !chunk.candidates[0].content || !chunk.candidates[0].content.parts) {
+        continue;
+      }
+      
+      if (chunk.candidates[0].content.parts[0].inlineData) {
+        // Handle image data
+        const inlineData = chunk.candidates[0].content.parts[0].inlineData;
+        const fileExtension = mime.getExtension(inlineData.mimeType || '') || 'png';
+        const buffer = Buffer.from(inlineData.data || '', 'base64');
+        
+        fullFilePath = path.join(uploadsDir, `${fileName}.${fileExtension}`);
+        fs.writeFileSync(fullFilePath, buffer);
+        
+        // Return a URL path relative to the server root
+        return `/uploads/${fileName}.${fileExtension}`;
+      }
+      else if (chunk.text) {
+        console.log('Received text from image generation:', chunk.text);
+      }
+    }
+
+    // If no image was generated but the API didn't fail, return a descriptive message
+    if (!fullFilePath) {
+      return "Gemini could not generate an image for your prompt. Please try a different description.";
     }
     
-    return text;
+    throw new Error('No image generated from Gemini API');
   } catch (error) {
-    console.error('Error generating image description:', error);
+    console.error('Error generating image:', error);
     
+    // Return a helpful error message that can be displayed to the user
     if (error instanceof Error) {
-      throw new Error(`Gemini API error: ${error.message}`);
+      // Generate a fallback description since we couldn't generate an image
+      return `Failed to generate image: ${error.message}. Please try a different prompt or try again later.`;
     }
     
-    throw new Error('Failed to generate image description');
+    return 'Failed to generate image. Please try a different prompt or try again later.';
   }
 }
