@@ -1,13 +1,9 @@
 import React from 'react';
-import { Bot } from 'lucide-react';
 
 export default function TypingIndicator() {
   return (
     <div className="max-w-3xl mx-auto">
-      <div className="flex items-start mb-6">
-        <div className="bg-primary rounded-full h-8 w-8 flex items-center justify-center mr-3">
-          <Bot className="h-4 w-4" />
-        </div>
+      <div className="flex items-start mb-6 ml-4">
         <div>
           <div className="font-medium mb-2">
             ChatMarko sedang mengetik

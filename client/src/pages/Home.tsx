@@ -11,10 +11,13 @@ export default function Home() {
     currentChat,
     messages,
     isLoading,
+    isCancelling,
     sendMessage,
     createNewChat,
     loadChat,
     loadChats,
+    stopGenerating,
+    deleteChat,
   } = useChat();
 
   useEffect(() => {
@@ -24,47 +27,51 @@ export default function Home() {
   const handleSendMessage = async (content: string, responseType: 'text' | 'image' = 'text') => {
     await sendMessage(content, responseType);
   };
-  
+
   // Wrapper functions that return void to match the component prop types
   const handleCreateNewChat = async () => {
     await createNewChat();
   };
-  
+
   const handleLoadChat = async (chatId: number) => {
     await loadChat(chatId);
+  };
+  
+  const handleDeleteChat = async (chatId: number) => {
+    await deleteChat(chatId);
   };
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-background text-foreground">
       {/* Sidebar - Hidden on mobile */}
-      <Sidebar 
-        chats={chats} 
-        onNewChat={handleCreateNewChat} 
+      <Sidebar
+        chats={chats}
+        onNewChat={handleCreateNewChat}
         onSelectChat={handleLoadChat}
+        onDeleteChat={handleDeleteChat}
         currentChatId={currentChat?.chat.id}
       />
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col h-full relative overflow-hidden">
         {/* Mobile Navigation */}
-        <MobileNav 
-          chats={chats} 
-          onNewChat={handleCreateNewChat} 
+        <MobileNav
+          chats={chats}
+          onNewChat={handleCreateNewChat}
           onSelectChat={handleLoadChat}
+          onDeleteChat={handleDeleteChat}
           currentChatId={currentChat?.chat.id}
         />
-        
+
         {/* Chat Area */}
-        <ChatArea 
-          messages={messages} 
-          isLoading={isLoading} 
-          onSendMessage={handleSendMessage}
-        />
-        
+        <ChatArea messages={messages} isLoading={isLoading} onSendMessage={handleSendMessage} />
+
         {/* Input Area */}
         <InputArea 
           onSendMessage={handleSendMessage} 
           isLoading={isLoading}
+          onStopGenerating={stopGenerating}
+          isCancelling={isCancelling}
         />
       </div>
     </div>

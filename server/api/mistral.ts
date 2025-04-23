@@ -29,7 +29,7 @@ export async function generateChatCompletion(prompt: string): Promise<string> {
   try {
     // Get API key from environment variables
     const apiKey = process.env.MISTRAL_API_KEY;
-    
+
     // Validate API key
     if (!apiKey) {
       throw new Error('MISTRAL_API_KEY is not defined in environment variables');
@@ -43,17 +43,17 @@ export async function generateChatCompletion(prompt: string): Promise<string> {
         messages: [
           {
             role: 'user',
-            content: prompt
-          }
+            content: prompt,
+          },
         ],
         temperature: 0.7,
-        max_tokens: 1024
+        max_tokens: 1024,
       },
       {
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
-        }
+          Authorization: `Bearer ${apiKey}`,
+        },
       }
     );
 
@@ -61,11 +61,13 @@ export async function generateChatCompletion(prompt: string): Promise<string> {
     return response.data.choices[0].message.content;
   } catch (error) {
     console.error('Error generating chat completion:', error);
-    
+
     if (axios.isAxiosError(error) && error.response) {
-      throw new Error(`Mistral API error: ${error.response.status} - ${error.response.data?.error?.message || JSON.stringify(error.response.data)}`);
+      throw new Error(
+        `Mistral API error: ${error.response.status} - ${error.response.data?.error?.message || JSON.stringify(error.response.data)}`
+      );
     }
-    
+
     throw new Error('Failed to generate chat completion');
   }
 }

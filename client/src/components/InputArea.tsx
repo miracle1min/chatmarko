@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { SendIcon, ImageIcon, MessageSquare } from 'lucide-react';
+import { SendIcon, ImageIcon, MessageSquare, StopCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -8,9 +8,11 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 interface InputAreaProps {
   onSendMessage: (content: string, responseType: 'text' | 'image') => Promise<void>;
   isLoading: boolean;
+  onStopGenerating?: () => void;
+  isCancelling?: boolean;
 }
 
-export default function InputArea({ onSendMessage, isLoading }: InputAreaProps) {
+export default function InputArea({ onSendMessage, isLoading, onStopGenerating, isCancelling = false }: InputAreaProps) {
   const [message, setMessage] = useState('');
   const [responseType, setResponseType] = useState<'text' | 'image'>('text');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -25,12 +27,12 @@ export default function InputArea({ onSendMessage, isLoading }: InputAreaProps) 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!message.trim() || isLoading) return;
-    
+
     await onSendMessage(message.trim(), responseType);
     setMessage('');
-    
+
     // Reset height after clearing
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
@@ -52,91 +54,90 @@ export default function InputArea({ onSendMessage, isLoading }: InputAreaProps) 
   };
 
   return (
-    <div className="sticky bottom-0 z-10 p-3 md:p-4 border-t border-gray-700 bg-dark-800 backdrop-blur-md">
-      <div className="max-w-3xl mx-auto">
-        <div className="flex justify-center mb-2">
-          <ToggleGroup 
-            type="single" 
-            value={responseType}
-            onValueChange={(value) => {
-              if (value) setResponseType(value as 'text' | 'image');
-            }}
-            className="bg-dark-900 border border-gray-700 rounded-full p-1"
-          >
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <ToggleGroupItem 
-                    value="text" 
-                    aria-label="Text mode" 
-                    className="rounded-full data-[state=on]:bg-dark-700 data-[state=on]:text-primary"
-                  >
-                    <MessageSquare className="h-4 w-4 mr-1" />
-                    <span className="text-xs">Teks</span>
-                  </ToggleGroupItem>
-                </TooltipTrigger>
-                <TooltipContent side="top">
-                  <p>Chat dengan AI (Mistral)</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <ToggleGroupItem 
-                    value="image" 
-                    aria-label="Image generation mode" 
-                    className="rounded-full data-[state=on]:bg-dark-700 data-[state=on]:text-primary"
-                  >
-                    <ImageIcon className="h-4 w-4 mr-1" />
-                    <span className="text-xs">Gambar</span>
-                  </ToggleGroupItem>
-                </TooltipTrigger>
-                <TooltipContent side="top">
-                  <p>Buat gambar (Gemini)</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </ToggleGroup>
-        </div>
-
+    <div className="sticky bottom-0 z-10 py-3 md:py-4 px-4 md:px-5 border-t border-gray-800/70 bg-gradient-to-t from-dark-900 to-dark-800 backdrop-blur-md shadow-lg">
+      <div className="max-w-3xl mx-auto relative">
         <form onSubmit={handleSubmit} className="relative">
+          <div className="flex items-center absolute left-4 top-1/2 transform -translate-y-1/2 space-x-2 z-10">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => setResponseType(responseType === 'text' ? 'image' : 'text')}
+                    className={`h-8 w-8 p-0 rounded-full flex items-center justify-center ${
+                      responseType === 'image' ? 'text-primary bg-primary/10' : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800'
+                    }`}
+                  >
+                    {responseType === 'text' ? (
+                      <ImageIcon className="h-4 w-4" />
+                    ) : (
+                      <MessageSquare className="h-4 w-4" />
+                    )}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  <p>{responseType === 'text' ? 'Beralih ke mode gambar' : 'Beralih ke mode teks'}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+
           <Textarea
             ref={textareaRef}
             value={message}
-            onChange={(e) => setMessage(e.target.value)}
+            onChange={e => setMessage(e.target.value)}
             onKeyDown={handleKeyDown}
-            className={`w-full bg-dark-900 border border-gray-700 rounded-lg px-4 py-3 pr-14 text-white resize-none focus:outline-none focus:ring-1 focus:ring-primary placeholder-gray-500 ${
-              responseType === 'image' ? 'border-primary/30' : ''
-            }`}
+            className={`w-full bg-gray-900 border ${
+              responseType === 'image' 
+                ? 'border-primary/40 placeholder-primary/70' 
+                : 'border-gray-700/50 placeholder-gray-400'
+            } rounded-xl pl-16 pr-14 py-3.5 text-white resize-none focus:outline-none focus:ring-1 focus:ring-primary shadow-md`}
             placeholder={getPlaceholder()}
-            style={{ minHeight: '52px', maxHeight: '200px' }}
+            style={{ minHeight: '54px', maxHeight: '200px' }}
             disabled={isLoading}
           />
-          
-          <button
-            type="submit"
-            className={`absolute right-3 bottom-2.5 transition-all p-1.5 rounded-full border-none outline-none bg-transparent ${
-              message.trim() ? 'text-primary opacity-100 scale-100' : 'text-gray-400 opacity-70 scale-95'
-            } hover:text-primary-600 hover:scale-110 disabled:cursor-not-allowed disabled:opacity-50`}
-            disabled={!message.trim() || isLoading}
-          >
-            <SendIcon className="h-5 w-5" strokeWidth={2.5} />
-          </button>
+
+          <div className="absolute right-3 bottom-2.5">
+            <button
+              type="submit"
+              className={`transition-all p-2 rounded-full border-none outline-none ${
+                message.trim()
+                  ? 'bg-primary text-white opacity-100 scale-100'
+                  : 'bg-gray-800 text-gray-400 opacity-70 scale-95'
+              } hover:bg-primary-600 hover:scale-105 disabled:cursor-not-allowed disabled:opacity-50`}
+              disabled={!message.trim() || isLoading}
+            >
+              <SendIcon className="h-4 w-4" strokeWidth={2.5} />
+            </button>
+          </div>
         </form>
 
-        <div className="flex items-center justify-center space-x-2 mt-2">
-          {responseType === 'image' && (
-            <div className="flex items-center text-xs text-primary animate-pulse">
-              <ImageIcon className="h-3 w-3 mr-1" />
-              <span>Mode gambar aktif</span>
+        <div className="flex items-center justify-center mt-2.5 h-8">
+          {isLoading && onStopGenerating && (
+            <button
+              onClick={onStopGenerating}
+              className="py-1.5 px-4 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-medium flex items-center transition-all hover:bg-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={isCancelling}
+            >
+              <StopCircle className="h-3 w-3 mr-1.5" />
+              <span>{isCancelling ? 'Membatalkan...' : 'Hentikan Generasi'}</span>
+            </button>
+          )}
+          
+          {!isLoading && responseType === 'image' && (
+            <div className="py-1.5 px-4 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-medium flex items-center">
+              <ImageIcon className="h-3 w-3 mr-1.5" />
+              <span>Mode Generasi Gambar</span>
             </div>
           )}
         </div>
 
-        <div className="text-xs text-center mt-1 text-gray-500">
-          ChatMarko dapat membuat kesalahan. Verifikasi informasi penting.
+        <div className="text-xs flex items-center justify-center mt-1.5">
+          <span className="text-gray-500 py-1 px-2 rounded-full bg-gray-900/50 backdrop-blur-sm">
+            ChatMarko dapat membuat kesalahan. Verifikasi informasi penting.
+          </span>
         </div>
       </div>
     </div>

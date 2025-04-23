@@ -1,28 +1,28 @@
-import { pgTable, text, serial, integer, boolean, timestamp } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
-import { z } from "zod";
+import { pgTable, text, serial, integer, boolean, timestamp } from 'drizzle-orm/pg-core';
+import { createInsertSchema } from 'drizzle-zod';
+import { z } from 'zod';
 
-export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
+export const users = pgTable('users', {
+  id: serial('id').primaryKey(),
+  username: text('username').notNull().unique(),
+  password: text('password').notNull(),
 });
 
-export const chats = pgTable("chats", {
-  id: serial("id").primaryKey(),
-  title: text("title").notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  userId: integer("user_id"),
+export const chats = pgTable('chats', {
+  id: serial('id').primaryKey(),
+  title: text('title').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  userId: integer('user_id'),
 });
 
-export const messages = pgTable("messages", {
-  id: serial("id").primaryKey(),
-  chatId: integer("chat_id").notNull(),
-  content: text("content").notNull(),
-  role: text("role").notNull(), // 'user' or 'assistant'
-  model: text("model").notNull(), // 'mistral' or 'gemini'
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  responseType: text("response_type").default("text"), // 'text' or 'image'
+export const messages = pgTable('messages', {
+  id: serial('id').primaryKey(),
+  chatId: integer('chat_id').notNull(),
+  content: text('content').notNull(),
+  role: text('role').notNull(), // 'user' or 'assistant'
+  model: text('model').notNull(), // 'mistral' or 'gemini'
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  responseType: text('response_type').default('text'), // 'text' or 'image'
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({

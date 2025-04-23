@@ -2,39 +2,153 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Code block styling exactly like ChatGPT */
+.code-block {
+  @apply overflow-hidden rounded-md mb-4 relative;
+  background-color: #1e1e1e; /* Dark background like in screenshot */
+  border-radius: 6px;
+  position: relative;
+}
+
+.light .code-block {
+  background-color: #f2f2f2; /* Light background for light mode */
+}
+
+.code-block-header {
+  @apply flex justify-between items-center px-3 py-2 text-xs;
+  background-color: #343541; /* Exact header color from ChatGPT */
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+  color: #c5c5d2;
+}
+
+.light .code-block-header {
+  background-color: #f2f2f2; /* Light header for light mode */
+  color: #343541;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.code-block::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 100%;
+  background-color: #565869;
+  display: block;
+}
+
+.light .code-block::before {
+  background-color: #acacbe;
+}
+
+.code-block pre {
+  @apply m-0 !important;
+  padding: 12px 14px 12px 18px !important; /* Extra padding to account for the line indicator */
+}
+
+/* Typing cursor effect */
+.typing-cursor {
+  display: inline-block;
+  width: 6px;
+  height: 15px;
+  background-color: #ffffff;
+  margin-left: 2px;
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* Message animation */
+.message-animation {
+  animation: fadeInUp 0.3s ease-out forwards;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 :root {
-  --background: 240 10% 3.9%; /* Very dark background */
-  --foreground: 0 0% 98%;
-  --card: 0 0% 15%; /* Slightly lighter dark */
-  --card-foreground: 0 0% 98%;
-  --popover: 240 10% 3.9%;
-  --popover-foreground: 0 0% 98%;
-  --primary: 158 100% 42%; /* Vibrant teal */
-  --primary-foreground: 211 100% 99%;
-  --primary-600: 158 100% 36%;
-  --secondary: 240 5% 25%; /* Dark gray with slight blue tint */
-  --secondary-foreground: 0 0% 98%;
-  --muted: 0 0% 15%;
-  --muted-foreground: 240 5% 64.9%;
-  --accent: 158 100% 42%;
-  --accent-foreground: 0 0% 98%;
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 0 0% 98%;
-  --border: 0 0% 20%;
-  --input: 0 0% 20%;
-  --ring: 158 100% 42%;
   --radius: 0.75rem;
-  
+}
+
+.light {
+  --background: 210 45% 98%; /* Subtle blue tint for background */
+  --foreground: 220 25% 20%; /* Deeper text color for better contrast */
+  --card: 0 0% 100%; /* Pure white cards */
+  --card-foreground: 220 25% 20%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 220 25% 20%;
+  --primary: 212 96% 45%; /* Professional blue */
+  --primary-foreground: 0 0% 100%;
+  --primary-600: 212 96% 35%; /* Darker blue for hover states */
+  --secondary: 210 20% 94%; /* Subtle secondary */
+  --secondary-foreground: 212 40% 25%;
+  --muted: 210 20% 96%;
+  --muted-foreground: 215 25% 40%; /* Better muted text contrast */
+  --accent: 210 90% 95%;
+  --accent-foreground: 212 40% 25%;
+  --destructive: 0 85% 45%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 214 20% 85%; /* More visible borders */
+  --input: 214 20% 85%;
+  --ring: 212 96% 45%;
+
   /* Custom theme colors */
-  --dark-900: #0c0c0c; /* Darker background */
-  --dark-800: #1e1e1e; /* Main background */
-  --dark-700: #2e2e2e; /* Lighter background */
-  --dark-600: #3e3e3e; /* Border/divider color */
-  --dark-100: #f0f0f0;
-  
+  --dark-900: #f8fafc;
+  --dark-800: #f1f5f9;
+  --dark-700: #e2e8f0;
+  --dark-600: #cbd5e1;
+  --dark-100: #1e293b;
+
   /* Chat accent colors */
-  --user-message-bg: #1e1e1e;
-  --assistant-message-bg: #0c0c0c;
+  --user-message-bg: #edf2f7; /* Slightly darker for better contrast */
+  --assistant-message-bg: #ffffff;
+}
+
+.dark {
+  --background: 220 25% 10%; /* Dark navy blue background */
+  --foreground: 210 30% 90%;
+  --card: 220 20% 15%; /* Slightly lighter navy */
+  --card-foreground: 210 30% 90%;
+  --popover: 220 25% 10%;
+  --popover-foreground: 210 30% 90%;
+  --primary: 210 100% 50%; /* Bright blue */
+  --primary-foreground: 210 40% 98%;
+  --primary-600: 210 100% 40%;
+  --secondary: 220 15% 25%; /* Dark blue-gray */
+  --secondary-foreground: 210 30% 90%;
+  --muted: 220 20% 15%;
+  --muted-foreground: 220 15% 70%;
+  --accent: 210 100% 50%;
+  --accent-foreground: 210 30% 90%;
+  --destructive: 0 80% 50%;
+  --destructive-foreground: 210 30% 90%;
+  --border: 220 20% 20%;
+  --input: 220 20% 20%;
+  --ring: 210 100% 50%;
+
+  /* Custom theme colors */
+  --dark-900: #111827; /* Darker navy blue background */
+  --dark-800: #1e293b; /* Main navy blue background */
+  --dark-700: #334155; /* Lighter navy blue */
+  --dark-600: #475569; /* Border/divider color */
+  --dark-100: #f1f5f9;
+
+  /* Chat accent colors */
+  --user-message-bg: #1e293b;
+  --assistant-message-bg: #111827;
 }
 
 @layer base {
@@ -87,8 +201,14 @@
 
 /* Chat message animations */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .message-animation {
@@ -105,8 +225,12 @@
 }
 
 @keyframes typing {
-  from { width: 0 }
-  to { width: 100% }
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
 }
 
 /* Typing indicator animation */
@@ -118,11 +242,12 @@
   background-color: hsl(var(--primary));
   border-radius: 50%;
   animation: dotFlashing 1s infinite linear alternate;
-  animation-delay: .5s;
+  animation-delay: 0.5s;
   margin-left: 4px;
 }
 
-.dot-typing::before, .dot-typing::after {
+.dot-typing::before,
+.dot-typing::after {
   content: '';
   display: inline-block;
   position: absolute;
@@ -149,7 +274,8 @@
   0% {
     background-color: hsl(var(--primary));
   }
-  50%, 100% {
+  50%,
+  100% {
     background-color: rgba(16, 163, 127, 0.2);
   }
 }
@@ -157,13 +283,13 @@
 /* Image styling */
 .generated-image {
   border-radius: 8px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
   transition: all 0.3s ease;
 }
 
 .generated-image:hover {
   transform: scale(1.02);
-  box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
 }
 
 /* Download button */
@@ -171,7 +297,7 @@
   position: absolute;
   bottom: 10px;
   right: 10px;
-  background-color: rgba(0,0,0,0.6);
+  background-color: rgba(0, 0, 0, 0.6);
   color: white;
   border-radius: 50%;
   width: 36px;
@@ -185,4 +311,230 @@
 
 .image-container:hover .download-button {
   opacity: 1;
+}
+
+/* Code syntax highlighting enhancements */
+pre {
+  border-radius: 6px !important;
+  margin: 1rem 0 !important;
+  overflow: auto;
+}
+
+.dark .prose pre {
+  background: #1a1b26 !important;
+  padding: 16px !important;
+  border: 1px solid rgba(59, 130, 246, 0.15) !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2) !important;
+}
+
+.light .prose pre {
+  background: #f8f9fc !important; /* Slightly blueish background */
+  padding: 16px !important;
+  border: 1px solid rgba(59, 130, 246, 0.2) !important; /* More visible border */
+  box-shadow: 0 4px 10px -1px rgba(0, 0, 0, 0.08) !important; /* Enhanced shadow */
+}
+
+.prose code {
+  font-family: 'JetBrains Mono', Monaco, 'Courier New', monospace !important;
+  font-size: 0.9rem !important;
+  letter-spacing: -0.01em !important; /* Better readability for code */
+}
+
+/* Modified Prose Styling */
+.light .prose {
+  color: #334155 !important; /* Better text color for light theme */
+}
+
+.light .prose strong {
+  color: #1e293b !important; /* Darker strong text */
+}
+
+.light .prose h1,
+.light .prose h2,
+.light .prose h3,
+.light .prose h4 {
+  color: #1e293b !important; /* Darker headings */
+  font-weight: 700 !important;
+}
+
+.light .prose a {
+  color: #2563eb !important; /* Clear link color */
+  text-decoration: none !important;
+  font-weight: 500 !important;
+  transition: all 0.2s !important;
+}
+
+.light .prose a:hover {
+  text-decoration: underline !important;
+  color: #1d4ed8 !important;
+}
+
+.light .prose blockquote {
+  color: #475569 !important; /* Slate 600 */
+  border-left-color: #cbd5e1 !important; /* Slate 300 */
+  background-color: #f8fafc !important; /* Slate 50 */
+  font-style: italic !important;
+}
+
+.light .prose table {
+  border-color: #e2e8f0 !important; /* Slate 200 */
+}
+
+.light .prose thead {
+  border-bottom-color: #e2e8f0 !important; /* Slate 200 */
+  background-color: #f8fafc !important; /* Slate 50 */
+}
+
+.light .prose th {
+  color: #1e293b !important; /* Slate 900 */
+}
+
+/* Make inline code stand out */
+.dark :not(pre) > code {
+  background: rgba(59, 130, 246, 0.15) !important; /* More contrast */
+  color: #93c5fd !important;
+  padding: 0.2em 0.4em !important;
+  border-radius: 4px !important;
+  font-size: 0.85em !important;
+  border: 1px solid rgba(59, 130, 246, 0.25) !important;
+  font-weight: 500 !important; /* Slightly bolder */
+}
+
+.light :not(pre) > code {
+  background: rgba(59, 130, 246, 0.1) !important; /* More visible */
+  color: #2563eb !important; /* Deeper blue for better contrast */
+  padding: 0.2em 0.4em !important;
+  border-radius: 4px !important;
+  font-size: 0.85em !important;
+  border: 1px solid rgba(59, 130, 246, 0.2) !important; /* Stronger border */
+  font-weight: 500 !important; /* Slightly bolder */
+}
+
+/* Copy button for code blocks */
+.dark .code-block-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.5rem 1rem;
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+  font-size: 0.85rem;
+  color: #94a3b8;
+  border-bottom: 1px solid rgba(59, 130, 246, 0.15);
+}
+
+.light .code-block-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(226, 232, 240, 0.85); /* More opaque for better readability */
+  padding: 0.5rem 1rem;
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500; /* Slightly bolder */
+  color: #334155; /* Darker text for better readability */
+  border-bottom: 1px solid rgba(59, 130, 246, 0.25); /* Stronger border */
+}
+
+.dark .code-block {
+  margin: 1rem 0;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid rgba(59, 130, 246, 0.15);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+  max-width: 100%;
+}
+
+.light .code-block {
+  margin: 1rem 0;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid rgba(71, 85, 105, 0.2); /* Stronger border */
+  box-shadow: 0 5px 15px -3px rgba(0, 0, 0, 0.08); /* Enhanced shadow */
+  max-width: 100%;
+}
+
+.code-block pre {
+  margin: 0 !important;
+  border-top-left-radius: 0 !important;
+  border-top-right-radius: 0 !important;
+  border: none !important;
+  max-width: 100% !important;
+  overflow-x: auto !important;
+  white-space: pre-wrap !important;
+}
+
+.code-block pre code {
+  font-family: 'JetBrains Mono', Menlo, Monaco, Consolas, 'Courier New', monospace !important;
+}
+
+/* Style for syntax highlighter */
+.react-syntax-highlighter-line-number {
+  opacity: 0.5 !important;
+  min-width: 2.5em !important;
+  padding-right: 1em !important;
+  text-align: right !important;
+  user-select: none !important;
+}
+
+/* Responsif untuk layar kecil */
+@media (max-width: 640px) {
+  .code-block-header {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+  }
+  
+  .code-block pre {
+    font-size: 0.8rem !important;
+    padding: 0.75rem !important;
+  }
+  
+  .prose pre {
+    padding: 0.75rem !important;
+  }
+  
+  /* Improved mobile styling */
+  .react-syntax-highlighter-line-number {
+    display: none !important; /* Hide line numbers on mobile */
+  }
+  
+  .code-block {
+    border-radius: 4px !important;
+    margin: 0.75rem 0 !important;
+  }
+  
+  .SyntaxHighlighter {
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  
+  .code-block-header {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 10 !important;
+  }
+  
+  /* Better text sizing for mobile */
+  .prose {
+    font-size: 0.95rem !important;
+  }
+  
+  .prose code {
+    font-size: 0.8rem !important;
+  }
+  
+  .prose h1 {
+    font-size: 1.5rem !important;
+  }
+  
+  .prose h2 {
+    font-size: 1.25rem !important;
+  }
+  
+  .prose h3 {
+    font-size: 1.1rem !important;
+  }
 }

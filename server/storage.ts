@@ -1,12 +1,12 @@
-import { 
-  users, 
-  type User, 
+import {
+  users,
+  type User,
   type InsertUser,
   type Chat,
   type InsertChat,
   type Message,
-  type InsertMessage
-} from "@shared/schema";
+  type InsertMessage,
+} from '@shared/schema';
 
 // modify the interface with any CRUD methods
 // you might need
@@ -15,12 +15,13 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
-  
+
   // Chat methods
   createChat(chat: InsertChat): Promise<Chat>;
   getChat(id: number): Promise<Chat | undefined>;
   getAllChats(): Promise<Chat[]>;
-  
+  deleteChat(id: number): Promise<boolean>;
+
   // Message methods
   createMessage(message: InsertMessage): Promise<Message>;
   getMessagesByChatId(chatId: number): Promise<Message[]>;
@@ -49,9 +50,7 @@ export class MemStorage implements IStorage {
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+    return Array.from(this.users.values()).find(user => user.username === username);
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
@@ -60,30 +59,48 @@ export class MemStorage implements IStorage {
     this.users.set(id, user);
     return user;
   }
-  
+
   // Chat methods
   async createChat(insertChat: InsertChat): Promise<Chat> {
     const id = this.chatId++;
-    const chat: Chat = { 
-      ...insertChat, 
-      id, 
+    const chat: Chat = {
+      ...insertChat,
+      id,
       createdAt: new Date(),
-      userId: insertChat.userId || null  // Ensure userId is not undefined
+      userId: insertChat.userId || null, // Ensure userId is not undefined
     };
     this.chats.set(id, chat);
     return chat;
   }
-  
+
   async getChat(id: number): Promise<Chat | undefined> {
     return this.chats.get(id);
   }
-  
+
   async getAllChats(): Promise<Chat[]> {
     return Array.from(this.chats.values()).sort((a, b) => {
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
   }
   
+  async deleteChat(id: number): Promise<boolean> {
+    // Check if chat exists
+    if (!this.chats.has(id)) {
+      return false;
+    }
+    
+    // Delete all messages associated with the chat
+    const messagesToDelete = Array.from(this.messages.values())
+      .filter(message => message.chatId === id);
+      
+    for (const message of messagesToDelete) {
+      this.messages.delete(message.id);
+    }
+    
+    // Delete the chat
+    return this.chats.delete(id);
+  }
+
   // Message methods
   async createMessage(insertMessage: InsertMessage): Promise<Message> {
     const id = this.messageId++;
@@ -91,12 +108,12 @@ export class MemStorage implements IStorage {
       ...insertMessage,
       id,
       createdAt: new Date(),
-      responseType: insertMessage.responseType || 'text'  // Ensure responseType is not undefined
+      responseType: insertMessage.responseType || 'text', // Ensure responseType is not undefined
     };
     this.messages.set(id, message);
     return message;
   }
-  
+
   async getMessagesByChatId(chatId: number): Promise<Message[]> {
     return Array.from(this.messages.values())
       .filter(message => message.chatId === chatId)
